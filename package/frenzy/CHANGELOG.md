@@ -1,0 +1,39 @@
+v1.9.10 — 2025-12-07
+
+Changed files:
+- admin/admin.css
+- assets/css/frontend.css
+- assets/frenzy-v1.9.7.zip
+- assets/img/mockup-base.png
+- assets/js/frenzy-api.js
+- assets/js/frenzy-canvas.js
+- assets/js/frenzy-core.js
+- assets/js/frenzy-display.js
+- assets/js/frenzy-grid-drag.js
+- assets/js/frenzy-grid.js
+- assets/js/frenzy-init.js
+- assets/js/frenzy-overlay-core.js
+- assets/js/frenzy-overlay-interactions.js
+- assets/js/frenzy-printbox.js
+- assets/js/frenzy-submit.js
+- assets/js/frenzy-upload.js
+- frenzy.php
+- includes/ajax-mockup.php
+- includes/cart-meta-handler.php
+- includes/cart-thumbnail.php
+- includes/color-quantize.php
+- includes/email-hooks.php
+- includes/enqueue-scripts.php
+- includes/frontend-ui.php
+- includes/github-updater.php
+- includes/mockup/builder.php
+- includes/mockup/handlers-generate.php
+- includes/mockup/handlers-save-canvas.php
+- includes/mockup/helpers-path.php
+- includes/mockup/hooks.php
+- includes/product-meta-box.php
+- includes/save-order-meta.php
+- includes/vectorize-image.py
+- includes/vectorize-runner.php
+- release.sh
+
