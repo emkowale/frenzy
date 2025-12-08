@@ -44,7 +44,10 @@
     Frenzy.ensureFieldsInsideForm();
     Frenzy.ensureContainer();
     Frenzy.printBox.ensurePrintBox(false);
-    if (Frenzy.state.canEditGrid) Frenzy.grid.bindAdminButtons();
+    if (Frenzy.state.canEditGrid) {
+      Frenzy.grid.bindAdminButtons();
+      Frenzy.grid.fetchGrid();
+    }
     Frenzy.display.detectBackgroundColor();
     bindHoverDisplay();
     const baseImg = document.querySelector('.woocommerce-product-gallery__image img');

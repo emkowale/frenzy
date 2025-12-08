@@ -7,6 +7,7 @@
     const originalUrl = $('#frenzy_original_url').val();
     const transform = $('#frenzy_transform').val();
     if (!originalUrl || !transform) return Promise.resolve(null);
+    Frenzy.log('generateServerMockup start', { originalUrl, transform });
     const data = new FormData();
     data.append('action', 'frenzy_generate_mockup');
     data.append('_ajax_nonce', window.frenzy_ajax.nonce);
@@ -23,7 +24,9 @@
           if (js.data.transform) $('#frenzy_transform').val(JSON.stringify(js.data.transform));
           return js.data.mockup_url;
         }
-        throw new Error((js && js.data && js.data.message) || 'Mockup failed');
+        const message = (js && js.data && js.data.message) || 'Mockup failed';
+        Frenzy.log('frenzy_generate_mockup (server) missing mockup_url', js);
+        throw new Error(message);
       })
       .catch((err) => { Frenzy.log('frenzy_generate_mockup (server) error', err); return null; });
   }
@@ -57,6 +60,7 @@
     fd.append('_ajax_nonce', window.frenzy_ajax.nonce);
     fd.append('product_id', window.frenzy_ajax.product_id || '');
     fd.append('image', file);
+    Frenzy.log('uploadFile start', { name: file && file.name, size: file && file.size });
     return fetch(window.frenzy_ajax.ajax_url, { method: 'POST', body: fd })
       .then(r => r.json())
       .then(resp => {
@@ -68,6 +72,11 @@
             $('#frenzy_transform').val(JSON.stringify(resp.data.transform));
             Frenzy.state.lastTransform = resp.data.transform;
           }
+          // Immediately build a canvas-based mockup so we have the product+art composite
+          Frenzy.canvas.generateCanvasMockup().then((url) => {
+            Frenzy.log('uploadFile canvas composite', url);
+            if (url) $('#frenzy_mockup_url').val(url);
+          });
         }
         return resp;
       })

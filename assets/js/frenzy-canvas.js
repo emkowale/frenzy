@@ -5,7 +5,7 @@
 
   function generateCanvasMockup() {
     const baseImg = document.querySelector('.woocommerce-product-gallery__image img');
-    if (!baseImg) return Promise.resolve(null);
+    if (!baseImg) { Frenzy.log('Canvas mockup skipped: no base image'); return Promise.resolve(null); }
     Frenzy.actions.restoreOverlayIfLost();
     const s = Frenzy.state;
     const baseSrc = baseImg.currentSrc || baseImg.src || '';
@@ -41,6 +41,7 @@
       const base = new Image();
       base.crossOrigin = 'anonymous';
       base.onload = () => {
+        Frenzy.log('Canvas base loaded', { w: base.width, h: base.height, src: baseSrc, overlay: !!s.overlay });
         ctx.drawImage(base, 0, 0, baseW, baseH);
         const finish = () => {
           canvas.toBlob((blob) => {
@@ -58,6 +59,7 @@
                   $('#frenzy_mockup_url').val(js.data.mockup_url);
                   resolve(js.data.mockup_url); return;
                 }
+                Frenzy.log('Canvas save returned no mockup_url', js);
                 resolve(null);
               })
               .catch((err) => { Frenzy.log('frenzy_save_canvas_mockup error', err); resolve(null); });
@@ -68,16 +70,20 @@
           const art = new Image();
           art.crossOrigin = 'anonymous';
           const bg = s.overlay.style.backgroundImage || '';
-          const match = bg.match(/url\\(["']?(.*?)["']?\\)/i);
-          const artUrl = match && match[1] ? match[1] : '';
-          if (!artUrl) return finish();
+          const match = bg.match(/url\(["']?(.*?)["']?\)/i);
+          let artUrl = match && match[1] ? match[1] : '';
+          if (!artUrl && s.lastOverlaySrc) artUrl = s.lastOverlaySrc;
+          if (!artUrl) artUrl = $('#frenzy_original_url').val() || '';
+          if (!artUrl) { Frenzy.log('Canvas art missing background URL (no overlay src)'); return finish(); }
           art.onload = () => {
+            Frenzy.log('Canvas art loaded', { src: artUrl, tf });
             ctx.drawImage(art, Math.round(tf.x * scaleX), Math.round(tf.y * scaleY), Math.round(tf.w * scaleX), Math.round(tf.h * scaleY));
             finish();
           };
           art.onerror = () => finish();
           art.src = artUrl;
         } else {
+          Frenzy.log('Canvas overlay or transform missing; saving base only');
           finish();
         }
       };

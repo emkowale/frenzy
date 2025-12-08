@@ -6,7 +6,7 @@
   function ensurePrintBox(showHandle) {
     if (!Frenzy.ensureContainer()) return;
     const dims = Frenzy.getImageRects();
-    if (!dims || !dims.imgRect.width || !dims.imgRect.height) return;
+    if (!dims || !dims.imgRect.width || !dims.imgRect.height) return false;
     const { imgRect, offsetLeft, offsetTop } = dims;
     const scaleX = imgRect.width / Frenzy.const.BASE_W;
     const scaleY = imgRect.height / Frenzy.const.BASE_H;
@@ -60,6 +60,7 @@
     }
     Frenzy.display.updatePrintBoxDisplay();
     Frenzy.display.updatePrintBoxColor(s.printBorderColor);
+    return true;
   }
 
   Frenzy.printBox = { ensurePrintBox };

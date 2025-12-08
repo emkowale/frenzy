@@ -46,16 +46,38 @@ add_action('wp_ajax_frenzy_save_grid', function () {
     }
     $product_id = absint($_POST['product_id'] ?? 0);
     if (!$product_id) wp_send_json_error(['message' => 'Missing product_id'], 400);
-    $x = isset($_POST['x']) ? (int) $_POST['x'] : null;
-    $y = isset($_POST['y']) ? (int) $_POST['y'] : null;
+    if (get_post_type($product_id) !== 'product') {
+        wp_send_json_error(['message' => 'Invalid product'], 400);
+    }
+    $x = isset($_POST['x']) ? max(0, (int) $_POST['x']) : null;
+    $y = isset($_POST['y']) ? max(0, (int) $_POST['y']) : null;
     $w = isset($_POST['w']) ? (int) $_POST['w'] : null;
     $h = isset($_POST['h']) ? (int) $_POST['h'] : null;
-    if ($x === null || $y === null || $w === null || $h === null || $w < 1 || $h < 1) {
+    if ($x === null || $y === null || $w === null || $h === null) {
         wp_send_json_error(['message' => 'Invalid grid dimensions'], 400);
     }
+    // Accept the exact values coming from the editor (only prevent negatives)
+    $w = max(1, $w);
+    $h = max(1, $h);
     update_post_meta($product_id, '_frenzy_grid_left', $x);
     update_post_meta($product_id, '_frenzy_grid_top', $y);
     update_post_meta($product_id, '_frenzy_grid_width', $w);
     update_post_meta($product_id, '_frenzy_grid_height', $h);
     wp_send_json_success(['grid' => ['x' => $x, 'y' => $y, 'w' => $w, 'h' => $h]]);
+});
+
+add_action('wp_ajax_frenzy_get_grid', function () {
+    if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+        wp_send_json_error(['message' => 'Unauthorized'], 403);
+    }
+    $nonce = $_POST['_ajax_nonce'] ?? '';
+    if (!wp_verify_nonce($nonce, 'frenzy_nonce')) {
+        wp_send_json_error(['message' => 'Bad nonce'], 403);
+    }
+    $product_id = absint($_POST['product_id'] ?? 0);
+    if (!$product_id || get_post_type($product_id) !== 'product') {
+        wp_send_json_error(['message' => 'Invalid product'], 400);
+    }
+    $grid = frenzy_get_grid_box($product_id);
+    wp_send_json_success(['grid' => $grid]);
 });

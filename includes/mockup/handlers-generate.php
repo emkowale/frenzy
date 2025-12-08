@@ -62,12 +62,7 @@ function frenzy_handle_generate_mockup() {
 
     $mockup = frenzy_build_mockup($original_path, $template_path, $transform);
     if (is_wp_error($mockup)) {
-        $fallback = frenzy_store_mockup_passthru($original_path);
-        if ($fallback) {
-            $mockup = ['url' => $fallback];
-        } else {
-            wp_send_json_error(['message' => $mockup->get_error_message()], 500);
-        }
+        wp_send_json_error(['message' => $mockup->get_error_message()], 500);
     }
 
     if (function_exists('WC') && WC()->session) {

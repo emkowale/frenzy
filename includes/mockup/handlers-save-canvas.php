@@ -12,9 +12,7 @@ function frenzy_handle_save_canvas_mockup() {
 
     $image_file = $_FILES['image']['tmp_name'] ?? '';
     $data_url   = $_POST['data_url'] ?? '';
-    $image_url  = isset($_POST['image_url']) ? esc_url_raw($_POST['image_url']) : '';
-    $downloaded_tmp = '';
-    if (!$image_file && !$data_url && !$image_url) {
+    if (!$image_file && !$data_url) {
         wp_send_json_error(['message' => 'No image provided'], 400);
     }
 
@@ -25,31 +23,12 @@ function frenzy_handle_save_canvas_mockup() {
     }
 
     $extension = 'png';
-    if ($image_url) {
-        $url_path = parse_url($image_url, PHP_URL_PATH);
-        $ext_candidate = $url_path ? strtolower(pathinfo($url_path, PATHINFO_EXTENSION)) : '';
-        if (in_array($ext_candidate, ['png', 'jpg', 'jpeg', 'webp', 'gif'], true)) {
-            $extension = $ext_candidate === 'jpg' ? 'jpeg' : $ext_candidate;
-        }
-    }
 
     $filename = 'mockup_canvas_' . uniqid('', true) . '.' . $extension;
     $out_path = $out_dir . $filename;
 
     if ($image_file) {
         if (!@move_uploaded_file($image_file, $out_path)) {
-            wp_send_json_error(['message' => 'Failed to save mockup'], 500);
-        }
-    } elseif ($image_url) {
-        if (!function_exists('download_url')) {
-            require_once ABSPATH . 'wp-admin/includes/file.php';
-        }
-        $downloaded_tmp = download_url($image_url);
-        if (is_wp_error($downloaded_tmp) || !file_exists($downloaded_tmp)) {
-            wp_send_json_error(['message' => 'Failed to fetch image'], 500);
-        }
-        if (!@copy($downloaded_tmp, $out_path)) {
-            @unlink($downloaded_tmp);
             wp_send_json_error(['message' => 'Failed to save mockup'], 500);
         }
     } else {
@@ -68,10 +47,6 @@ function frenzy_handle_save_canvas_mockup() {
     }
 
     $out_url = trailingslashit($uploads['baseurl']) . 'frenzy-mockups/' . $filename;
-    if ($downloaded_tmp) {
-        @unlink($downloaded_tmp);
-    }
-
     if (function_exists('WC') && WC()->session) {
         WC()->session->set('frenzy_last_mockup', [
             'mockup_url'   => esc_url_raw($out_url),

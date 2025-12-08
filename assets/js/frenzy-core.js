@@ -34,7 +34,7 @@
   };
 
   Frenzy.log = (...args) => {
-    try { console.debug('[Frenzy]', ...args); } catch (e) {}
+    try { console.log('[Frenzy]', ...args); } catch (e) {}
   };
 
   Frenzy.getImageRects = function () {

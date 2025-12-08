@@ -1,22 +1,17 @@
 <?php
 if (!defined('ABSPATH')) exit;
-function frenzy_load_image_any(string $path) {
-    if (!file_exists($path)) return false;
-    $data = @file_get_contents($path);
-    if ($data === false) return false;
-    return @imagecreatefromstring($data);
-}
-function frenzy_build_mockup(string $user_path, string $template_path, array $transform = []) {
-    if (!extension_loaded('gd')) return new WP_Error('mockup_no_gd', 'GD is required to build mockups.');
+
+function frenzy_write_mockup(string $template_path, string $user_path, array $transform): array {
+    if (!extension_loaded('gd')) return ['error' => new WP_Error('mockup_no_gd', 'GD is required to build mockups.')];
 
     $template = frenzy_load_image_any($template_path);
-    if (!$template) return new WP_Error('mockup_template_load', 'Failed to load mockup template.');
+    if (!$template) return ['error' => new WP_Error('mockup_template_load', 'Failed to load mockup template.')];
 
     $user_data = @file_get_contents($user_path);
     $user_img  = $user_data ? @imagecreatefromstring($user_data) : false;
     if (!$user_img) {
         imagedestroy($template);
-        return new WP_Error('mockup_user_load', 'Could not read uploaded image.');
+        return ['error' => new WP_Error('mockup_user_load', 'Could not read uploaded image.')];
     }
 
     $template_w = imagesx($template);
@@ -24,35 +19,22 @@ function frenzy_build_mockup(string $user_path, string $template_path, array $tr
     if ($template_w <= 0 || $template_h <= 0) {
         imagedestroy($template);
         imagedestroy($user_img);
-        return new WP_Error('mockup_template_dims', 'Template image has invalid dimensions.');
+        return ['error' => new WP_Error('mockup_template_dims', 'Template image has invalid dimensions.')];
     }
 
-    $region = [
-        'x' => (int) round(320 * ($template_w / 1200)),
-        'y' => (int) round(250 * ($template_h / 1200)),
-        'w' => (int) round(560 * ($template_w / 1200)),
-        'h' => (int) round(650 * ($template_h / 1200)),
-    ];
-
+    $region = frenzy_compute_region($template_w, $template_h);
     $user_w = imagesx($user_img);
     $user_h = imagesy($user_img);
     if ($user_w === 0 || $user_h === 0) {
         imagedestroy($template);
         imagedestroy($user_img);
-        return new WP_Error('mockup_bad_dims', 'Uploaded image has invalid dimensions.');
+        return ['error' => new WP_Error('mockup_bad_dims', 'Uploaded image has invalid dimensions.')];
     }
 
     if (!empty($transform)) {
-        $scaled_w = max(1, min($transform['w'], $template_w));
-        $scaled_h = max(1, min($transform['h'], $template_h));
-        $dest_x   = max(0, min($transform['x'], $template_w - $scaled_w));
-        $dest_y   = max(0, min($transform['y'], $template_h - $scaled_h));
+        [$scaled_w, $scaled_h, $dest_x, $dest_y] = frenzy_scale_transform($transform, $template_w, $template_h);
     } else {
-        $scale = min($region['w'] / $user_w, $region['h'] / $user_h);
-        $scaled_w = max(1, (int) floor($user_w * $scale));
-        $scaled_h = max(1, (int) floor($user_h * $scale));
-        $dest_x = (int) ($region['x'] + floor(($region['w'] - $scaled_w) / 2));
-        $dest_y = (int) ($region['y'] + floor(($region['h'] - $scaled_h) / 2));
+        [$scaled_w, $scaled_h, $dest_x, $dest_y] = frenzy_scale_to_region($region, $user_w, $user_h);
     }
 
     $scaled = imagecreatetruecolor($scaled_w, $scaled_h);
@@ -84,7 +66,7 @@ function frenzy_build_mockup(string $user_path, string $template_path, array $tr
         imagedestroy($template);
         imagedestroy($scaled);
         imagedestroy($user_img);
-        return new WP_Error('mockup_write_dir', 'Failed to create mockup output directory.');
+        return ['error' => new WP_Error('mockup_write_dir', 'Failed to create mockup output directory.')];
     }
 
     $out_name = 'mockup_' . uniqid('', true) . '.png';
@@ -93,7 +75,8 @@ function frenzy_build_mockup(string $user_path, string $template_path, array $tr
     imagedestroy($template);
     imagedestroy($scaled);
     imagedestroy($user_img);
-    if (!$saved) return new WP_Error('mockup_save_failed', 'Could not save mockup.');
+
+    if (!$saved) return ['error' => new WP_Error('mockup_save_failed', 'Could not save mockup.')];
 
     $out_url = trailingslashit($uploads['baseurl']) . 'frenzy-mockups/' . $out_name;
     return ['path' => $out_path, 'url' => $out_url];
