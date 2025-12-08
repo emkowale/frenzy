@@ -1,3 +1,45 @@
+v1.9.11 — 2025-12-07
+
+Changed files:
+- artifacts/frenzy-v1.9.10.zip
+- frenzy.php
+- package/frenzy/CHANGELOG.md
+- package/frenzy/admin/admin.css
+- package/frenzy/assets/css/frontend.css
+- package/frenzy/assets/frenzy-v1.9.7.zip
+- package/frenzy/assets/img/mockup-base.png
+- package/frenzy/assets/js/frenzy-api.js
+- package/frenzy/assets/js/frenzy-canvas.js
+- package/frenzy/assets/js/frenzy-core.js
+- package/frenzy/assets/js/frenzy-display.js
+- package/frenzy/assets/js/frenzy-grid-drag.js
+- package/frenzy/assets/js/frenzy-grid.js
+- package/frenzy/assets/js/frenzy-init.js
+- package/frenzy/assets/js/frenzy-overlay-core.js
+- package/frenzy/assets/js/frenzy-overlay-interactions.js
+- package/frenzy/assets/js/frenzy-printbox.js
+- package/frenzy/assets/js/frenzy-submit.js
+- package/frenzy/assets/js/frenzy-upload.js
+- package/frenzy/frenzy.php
+- package/frenzy/includes/ajax-mockup.php
+- package/frenzy/includes/cart-meta-handler.php
+- package/frenzy/includes/cart-thumbnail.php
+- package/frenzy/includes/color-quantize.php
+- package/frenzy/includes/email-hooks.php
+- package/frenzy/includes/enqueue-scripts.php
+- package/frenzy/includes/frontend-ui.php
+- package/frenzy/includes/github-updater.php
+- package/frenzy/includes/mockup/builder.php
+- package/frenzy/includes/mockup/handlers-generate.php
+- package/frenzy/includes/mockup/handlers-save-canvas.php
+- package/frenzy/includes/mockup/helpers-path.php
+- package/frenzy/includes/mockup/hooks.php
+- package/frenzy/includes/product-meta-box.php
+- package/frenzy/includes/save-order-meta.php
+- package/frenzy/includes/vectorize-image.py
+- package/frenzy/includes/vectorize-runner.php
+- package/frenzy/release.sh
+
 v1.9.10 — 2025-12-07
 
 Changed files:
