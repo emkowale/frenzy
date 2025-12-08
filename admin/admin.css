@@ -1,0 +1,53 @@
+/*
+ * Filename: admin.css
+ * Author: Eric Kowalewski
+ * Plugin Name: Frenzy
+ * Version: 1.9.6
+ * Date: 2025-04-29
+ * Time: 1:10 PM EST
+ */
+
+#frenzy_mockup_selector {
+    display: flex;
+    overflow-x: auto;
+    padding: 5px 0;
+    gap: 10px;
+}
+
+#frenzy_mockup_selector img {
+    width: 80px;
+    height: auto;
+    max-height: 80px;
+    object-fit: contain;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border 0.2s ease;
+}
+
+#frenzy_mockup_selector img:hover {
+    border: 2px solid #999;
+}
+
+#frenzy_mockup_selector img.selected {
+    border: 2px solid #007cba; /* WordPress blue */
+}
+
+#frenzy_smart_object_selector {
+    margin-top: 10px;
+    width: 100%;
+}
+/* Tooltip styling for Frenzy admin fields */
+.frenzy-admin-tooltip {
+  display: inline-block;
+  margin-left: 6px;
+  color: #2271b1;
+  cursor: help;
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom: 1px dotted #2271b1;
+}
+
+.frenzy-admin-tooltip:hover {
+  color: #135e96;
+}
+
