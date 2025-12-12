@@ -1,3 +1,19 @@
+v1.9.13 — 2025-12-12
+
+Changed files:
+- artifacts/frenzy-v1.9.12.zip
+- assets/js/frenzy-api.js
+- assets/js/frenzy-core.js
+- assets/js/frenzy-display.js
+- assets/js/frenzy-grid.js
+- assets/js/frenzy-init.js
+- assets/js/frenzy-upload.js
+- frenzy.php
+- includes/enqueue-scripts.php
+- includes/mockup/handlers-generate.php
+- includes/mockup/handlers-save-canvas.php
+- includes/mockup/helpers-path.php
+
 v1.9.12 — 2025-12-08
 
 Changed files:
