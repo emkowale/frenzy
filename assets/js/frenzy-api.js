@@ -60,6 +60,10 @@
     fd.append('_ajax_nonce', window.frenzy_ajax.nonce);
     fd.append('product_id', window.frenzy_ajax.product_id || '');
     fd.append('image', file);
+    const previousOriginal = $('#frenzy_original_url').val();
+    const previousMockup = $('#frenzy_mockup_url').val();
+    if (previousOriginal) fd.append('previous_original_url', previousOriginal);
+    if (previousMockup) fd.append('previous_mockup_url', previousMockup);
     Frenzy.log('uploadFile start', { name: file && file.name, size: file && file.size });
     return fetch(window.frenzy_ajax.ajax_url, { method: 'POST', body: fd })
       .then(r => r.json())

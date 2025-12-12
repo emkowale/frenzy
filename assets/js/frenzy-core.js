@@ -26,8 +26,12 @@
     start: null,
     printBoxVisible: false,
     printBorderColor: 'rgba(255,255,255,0.9)',
-    hoverDevice: window.matchMedia && window.matchMedia('(hover: hover)').matches,
+    hoverDevice: (function () {
+      if (!window.matchMedia) return false;
+      return window.matchMedia('(hover: hover)').matches || window.matchMedia('(pointer: fine)').matches;
+    })(),
     hoverInGallery: false,
+    mobileIdle: false,
     isEditingGrid: false,
     lastOverlaySrc: '',
     lastTransform: null,

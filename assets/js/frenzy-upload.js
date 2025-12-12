@@ -3,6 +3,46 @@
   const Frenzy = window.Frenzy;
   if (!Frenzy) return;
 
+  const uploadButtonId = 'frenzy-upload-button';
+  const uploadDisabledTitle = 'You have already uploaded an image. To select a different image, delete the first by clicking or touching the red X in the top left corner of the image.';
+  let observer = null;
+
+  function setUploadButtonAvailability(enabled) {
+    const btn = document.getElementById(uploadButtonId);
+    if (!btn) return;
+    btn.disabled = !enabled;
+    if (enabled) {
+      btn.removeAttribute('title');
+    } else {
+      btn.setAttribute('title', uploadDisabledTitle);
+    }
+  }
+
+  function disableUploadButton() {
+    setUploadButtonAvailability(false);
+  }
+
+  function enableUploadButton() {
+    setUploadButtonAvailability(true);
+  }
+
+  function syncUploadButtonWithOverlay() {
+    const hasOverlay = !!document.querySelector('.frenzy-art');
+    setUploadButtonAvailability(!hasOverlay);
+  }
+
+  function observeOverlayChanges() {
+    if (observer) return;
+    const gallery = document.querySelector('.woocommerce-product-gallery');
+    if (!gallery) {
+      requestAnimationFrame(observeOverlayChanges);
+      return;
+    }
+    observer = new MutationObserver(syncUploadButtonWithOverlay);
+    observer.observe(gallery, { childList: true, subtree: true });
+    syncUploadButtonWithOverlay();
+  }
+
   function handleFile(file) {
     if (!file) return;
     const typeOk = /^image\/(png|jpe?g|webp)$/i.test(file.type);
@@ -35,7 +75,9 @@
       handleFile(file);
       this.value = '';
     });
+    observeOverlayChanges();
   }
 
   Frenzy.upload = { bindUploadButtons, handleFile };
+  Frenzy.uploadButton = { disable: disableUploadButton, enable: enableUploadButton, tooltip: uploadDisabledTitle };
 })(window, jQuery);

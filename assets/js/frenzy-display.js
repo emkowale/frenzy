@@ -3,6 +3,22 @@
   const Frenzy = window.Frenzy;
   if (!Frenzy) return;
 
+  let mobileIdleTimer = null;
+
+  function bumpMobileActivity() {
+    const s = Frenzy.state;
+    s.mobileIdle = false;
+    if (mobileIdleTimer) clearTimeout(mobileIdleTimer);
+    // Auto-hide after 2s of no interaction on non-hover devices when not editing grid
+    mobileIdleTimer = setTimeout(() => {
+      if (!s.hoverDevice && !s.isEditingGrid) {
+        s.mobileIdle = true;
+        s.printBoxVisible = false;
+        updatePrintBoxDisplay();
+      }
+    }, 2000);
+  }
+
   function updatePrintBoxColor(color) {
     Frenzy.state.printBorderColor = color;
     const { printBox, resizeHandle, centerLine } = Frenzy.state;
@@ -41,6 +57,7 @@
   function shouldShowPrintBox() {
     const s = Frenzy.state;
     if (!s.printBox) return false;
+    if (s.mobileIdle && !s.isEditingGrid) return false;
     if (!s.hoverDevice) return (s.overlay || s.printBoxVisible || s.isEditingGrid);
     if (!s.hoverInGallery) return false;
     return s.overlay || s.printBoxVisible || s.isEditingGrid;
@@ -53,7 +70,7 @@
     s.printBox.style.display = show ? 'block' : 'none';
     s.printBox.style.pointerEvents = (s.isEditingGrid ? 'auto' : 'none');
     if (s.centerLine) s.centerLine.style.display = (show && s.centerLineVisible) ? 'block' : 'none';
-    const showControls = (!s.hoverDevice || s.hoverInGallery || s.isEditingGrid);
+    const showControls = (!s.hoverDevice || s.hoverInGallery || s.isEditingGrid) && !s.mobileIdle;
     if (s.deleteBtn) s.deleteBtn.style.display = showControls ? 'flex' : 'none';
     if (s.overlayHandle) s.overlayHandle.style.display = showControls ? 'block' : 'none';
     if (s.resizeHandle) s.resizeHandle.style.display = (s.isEditingGrid && show) ? 'block' : 'none';
@@ -65,5 +82,5 @@
     updatePrintBoxDisplay();
   }
 
-  Frenzy.display = { updatePrintBoxColor, detectBackgroundColor, updatePrintBoxDisplay, setCenterLineVisible };
+  Frenzy.display = { updatePrintBoxColor, detectBackgroundColor, updatePrintBoxDisplay, setCenterLineVisible, bumpMobileActivity };
 })(window, jQuery);

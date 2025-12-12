@@ -37,6 +37,134 @@
     };
   }
 
+  function formatMockupFileName(date = new Date()) {
+    const pad = (value) => String(value).padStart(2, '0');
+    const mm = pad(date.getMonth() + 1);
+    const dd = pad(date.getDate());
+    const yyyy = date.getFullYear();
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const seconds = pad(date.getSeconds());
+    return `mockup-${mm}${dd}${yyyy}${hours}${minutes}${seconds}.png`;
+  }
+
+  function resolveOverlayTransform() {
+    const stored = document.getElementById('frenzy_transform');
+    if (stored && stored.value) {
+      try {
+        const parsed = JSON.parse(stored.value);
+        if (parsed && typeof parsed === 'object') return parsed;
+      } catch (e) { /* ignore */ }
+    }
+    const s = Frenzy.state;
+    if (s.overlay) {
+      const dims = Frenzy.getImageRects();
+      if (!dims || !dims.imgRect.width || !dims.imgRect.height) return null;
+      const rect = s.overlay.getBoundingClientRect();
+      const imgRect = dims.imgRect;
+      return {
+        x: Math.round(Math.max(0, rect.left - imgRect.left) * (Frenzy.const.BASE_W / imgRect.width)),
+        y: Math.round(Math.max(0, rect.top - imgRect.top) * (Frenzy.const.BASE_H / imgRect.height)),
+        w: Math.round(rect.width * (Frenzy.const.BASE_W / imgRect.width)),
+        h: Math.round(rect.height * (Frenzy.const.BASE_H / imgRect.height)),
+      };
+    }
+    return null;
+  }
+
+  function resolveOverlayImageUrl() {
+    const s = Frenzy.state;
+    let artUrl = '';
+    if (s.overlay) {
+      const bg = s.overlay.style.backgroundImage || '';
+      const match = bg.match(/url\(["']?(.*?)["']?\)/i);
+      artUrl = match && match[1] ? match[1] : '';
+    }
+    if (!artUrl && s.lastOverlaySrc) artUrl = s.lastOverlaySrc;
+    if (!artUrl) {
+      const original = document.getElementById('frenzy_original_url');
+      if (original && original.value) artUrl = original.value;
+    }
+    return artUrl;
+  }
+
+  function buildMockupCanvas(targetWidth = 500) {
+    return new Promise((resolve) => {
+      const baseImg = document.querySelector('.woocommerce-product-gallery__image img');
+      if (!baseImg) return resolve(null);
+      if (Frenzy.actions && Frenzy.actions.restoreOverlayIfLost) {
+        Frenzy.actions.restoreOverlayIfLost();
+      }
+      const baseSrc = baseImg.currentSrc || baseImg.src || '';
+      if (!baseSrc) return resolve(null);
+      const naturalWidth = baseImg.naturalWidth || Frenzy.const.BASE_W;
+      const naturalHeight = baseImg.naturalHeight || Frenzy.const.BASE_H;
+      const scaleToTarget = targetWidth / naturalWidth;
+      const targetHeight = Math.max(1, Math.round(naturalHeight * scaleToTarget));
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve(null);
+      const base = new Image();
+      base.crossOrigin = 'anonymous';
+      base.onload = () => {
+        ctx.drawImage(base, 0, 0, targetWidth, targetHeight);
+        const tf = resolveOverlayTransform();
+        if (!tf) return resolve(canvas);
+        const artUrl = resolveOverlayImageUrl();
+        if (!artUrl) return resolve(canvas);
+        const art = new Image();
+        art.crossOrigin = 'anonymous';
+        art.onload = () => {
+          const baseScaleX = naturalWidth / Frenzy.const.BASE_W;
+          const baseScaleY = naturalHeight / Frenzy.const.BASE_H;
+          const overlayX = Math.round(tf.x * baseScaleX);
+          const overlayY = Math.round(tf.y * baseScaleY);
+          const overlayW = Math.round(tf.w * baseScaleX);
+          const overlayH = Math.round(tf.h * baseScaleY);
+          const targetScale = targetWidth / naturalWidth;
+          ctx.drawImage(
+            art,
+            Math.round(overlayX * targetScale),
+            Math.round(overlayY * targetScale),
+            Math.max(1, Math.round(overlayW * targetScale)),
+            Math.max(1, Math.round(overlayH * targetScale))
+          );
+          resolve(canvas);
+        };
+        art.onerror = () => resolve(canvas);
+        art.src = artUrl;
+      };
+      base.onerror = () => resolve(null);
+      base.src = baseSrc;
+    });
+  }
+
+  function downloadCanvasMockup(canvas) {
+    if (!canvas || !canvas.toBlob) {
+      setStatus('Mockup generation failed');
+      return;
+    }
+    setStatus('Preparing mockup...');
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setStatus('Mockup generation failed');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = formatMockupFileName();
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+      setStatus('Mockup saved');
+      setTimeout(() => { setStatus(''); }, 1500);
+    }, 'image/png');
+  }
+
   function fetchGrid() {
     const fd = new FormData();
     fd.append('action', 'frenzy_get_grid');
@@ -89,6 +217,32 @@
     btn.className = 'button alt';
     btn.style.marginTop = '8px'; btn.style.marginRight = '8px';
 
+    let mockupBtn = null;
+    const canSaveMockup = (window.frenzy_ajax && window.frenzy_ajax.can_save_mockup) || Frenzy.state.canEditGrid;
+    if (canSaveMockup) {
+      mockupBtn = document.createElement('button');
+      mockupBtn.id = 'frenzy-save-mockup';
+      mockupBtn.type = 'button';
+      mockupBtn.textContent = 'Save Mockup';
+      mockupBtn.className = 'button alt';
+      mockupBtn.style.marginTop = '8px';
+      mockupBtn.style.marginRight = '8px';
+      mockupBtn.addEventListener('click', function () {
+        setStatus('Generating mockup...');
+        buildMockupCanvas(500)
+          .then((canvas) => {
+            if (!canvas) {
+              setStatus('Mockup unavailable');
+              return;
+            }
+            downloadCanvasMockup(canvas);
+          })
+          .catch(() => {
+            setStatus('Mockup unavailable');
+          });
+      });
+    }
+
     const status = document.createElement('div');
     status.id = 'frenzy-save-grid-status';
     status.style.marginLeft = '0';
@@ -100,6 +254,7 @@
     const holder = document.createElement('div');
     holder.style.marginTop = '8px';
     holder.appendChild(btn);
+    if (mockupBtn) holder.appendChild(mockupBtn);
     holder.appendChild(status);
     galleryWrapper.parentNode.insertBefore(holder, galleryWrapper.nextSibling);
 

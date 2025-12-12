@@ -47,7 +47,13 @@ function frenzy_handle_save_canvas_mockup() {
     }
 
     $out_url = trailingslashit($uploads['baseurl']) . 'frenzy-mockups/' . $filename;
+    $previous_mockup = [];
     if (function_exists('WC') && WC()->session) {
+        $previous_mockup = WC()->session->get('frenzy_last_mockup') ?: [];
+        if (!empty($previous_mockup)) {
+            frenzy_delete_mockup_file($previous_mockup['original_url'] ?? '');
+            frenzy_delete_mockup_file($previous_mockup['mockup_url'] ?? '');
+        }
         WC()->session->set('frenzy_last_mockup', [
             'mockup_url'   => esc_url_raw($out_url),
             'original_url' => '',

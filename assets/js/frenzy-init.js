@@ -22,6 +22,25 @@
       galleryHoverTarget.addEventListener('mouseenter', () => { Frenzy.state.hoverInGallery = true; Frenzy.display.updatePrintBoxDisplay(); });
       galleryHoverTarget.addEventListener('mouseleave', () => { Frenzy.state.hoverInGallery = false; if (!Frenzy.state.overlay && !Frenzy.state.isEditingGrid) Frenzy.state.printBoxVisible = false; Frenzy.display.updatePrintBoxDisplay(); });
     }
+    // On touch devices, hide after inactivity; bump on any interaction in the gallery
+    if (!Frenzy.state.hoverDevice && galleryHoverTarget) {
+      ['touchstart', 'touchmove', 'mousedown'].forEach(evt => {
+        galleryHoverTarget.addEventListener(evt, () => {
+          Frenzy.display.bumpMobileActivity();
+          Frenzy.state.printBoxVisible = true;
+          Frenzy.display.updatePrintBoxDisplay();
+        }, { passive: true });
+      });
+      ['pointerdown', 'pointermove'].forEach(evt => {
+        galleryHoverTarget.addEventListener(evt, (e) => {
+          if (e.pointerType === 'mouse') return;
+          Frenzy.display.bumpMobileActivity();
+          Frenzy.state.printBoxVisible = true;
+          Frenzy.display.updatePrintBoxDisplay();
+        }, { passive: true });
+      });
+      Frenzy.display.bumpMobileActivity();
+    }
   }
 
   function reattachAfterVariation() {

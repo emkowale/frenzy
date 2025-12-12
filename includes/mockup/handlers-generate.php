@@ -11,6 +11,15 @@ function frenzy_handle_generate_mockup() {
         wp_send_json_error(['message' => 'Security check failed'], 403);
     }
 
+    $previous_original_url = !empty($_POST['previous_original_url']) ? esc_url_raw($_POST['previous_original_url']) : '';
+    $previous_mockup_url = !empty($_POST['previous_mockup_url']) ? esc_url_raw($_POST['previous_mockup_url']) : '';
+    if ($previous_original_url) {
+        frenzy_delete_mockup_file($previous_original_url);
+    }
+    if ($previous_mockup_url && $previous_mockup_url !== $previous_original_url) {
+        frenzy_delete_mockup_file($previous_mockup_url);
+    }
+
     $transform = [];
     if (!empty($_POST['transform'])) {
         $decoded = json_decode(stripslashes($_POST['transform']), true);
@@ -26,6 +35,11 @@ function frenzy_handle_generate_mockup() {
 
     $original_path = '';
     $original_url  = '';
+    $previous_mockup = [];
+    $is_file_upload = !empty($_FILES['image']['tmp_name']);
+    if ($is_file_upload && function_exists('WC') && WC()->session) {
+        $previous_mockup = WC()->session->get('frenzy_last_mockup') ?: [];
+    }
 
     if (!empty($_FILES['image']['tmp_name'])) {
         $file = $_FILES['image'];
@@ -39,8 +53,12 @@ function frenzy_handle_generate_mockup() {
         if (!empty($upload['error'])) {
             wp_send_json_error(['message' => 'Upload failed: ' . $upload['error']], 500);
         }
-        $original_path = $upload['file'];
-        $original_url  = $upload['url'];
+        $moved = frenzy_move_to_mockup_dir($upload['file'], 'upload_');
+        if (is_wp_error($moved)) {
+            wp_send_json_error(['message' => 'Upload move failed: ' . $moved->get_error_message()], 500);
+        }
+        $original_path = $moved['path'];
+        $original_url  = $moved['url'];
     } elseif (!empty($_POST['original_url'])) {
         $original_url = esc_url_raw($_POST['original_url']);
         $original_path = frenzy_path_from_url($original_url);
@@ -66,6 +84,10 @@ function frenzy_handle_generate_mockup() {
     }
 
     if (function_exists('WC') && WC()->session) {
+        if (!empty($previous_mockup)) {
+            frenzy_delete_mockup_file($previous_mockup['original_url'] ?? '');
+            frenzy_delete_mockup_file($previous_mockup['mockup_url'] ?? '');
+        }
         WC()->session->set('frenzy_last_mockup', [
             'mockup_url'   => esc_url_raw($mockup['url']),
             'original_url' => esc_url_raw($original_url),
