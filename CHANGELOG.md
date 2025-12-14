@@ -1,3 +1,15 @@
+v1.9.14 — 2025-12-13
+
+Changed files:
+- artifacts/frenzy-v1.9.13.zip
+- assets/css/frontend.css
+- assets/js/frenzy-overlay-core.js
+- assets/js/frenzy-overlay-interactions.js
+- assets/js/frenzy-printbox.js
+- frenzy.php
+- includes/cart-thumbnail.php
+- includes/cart/order-meta.php
+
 v1.9.13 — 2025-12-12
 
 Changed files:
