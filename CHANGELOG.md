@@ -1,3 +1,9 @@
+v1.9.16 — 2025-12-13
+
+Changed files:
+- frenzy.php
+- release.sh
+
 v1.9.15 — 2025-12-13
 
 Changed files:
