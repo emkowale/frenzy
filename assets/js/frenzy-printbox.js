@@ -51,8 +51,26 @@
     if (showHandle && !s.resizeHandle) {
       const rh = document.createElement('div');
       rh.className = 'frenzy-resize-handle';
-      Object.assign(rh.style, { position: 'absolute', width: '18px', height: '18px', border: `2px solid ${s.printBorderColor}`, background: 'rgba(34,34,34,0.8)', right: '-14px', bottom: '-14px', cursor: 'nwse-resize', pointerEvents: 'auto', boxSizing: 'border-box', touchAction: 'none' });
+      Object.assign(rh.style, {
+        position: 'absolute',
+        width: '18px',
+        height: '18px',
+        border: `2px solid ${s.printBorderColor}`,
+        background: 'rgba(34,34,34,0.8)',
+        right: '-14px',
+        bottom: '-14px',
+        cursor: 'nwse-resize',
+        pointerEvents: 'auto',
+        boxSizing: 'border-box',
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserDrag: 'none',
+      });
       s.printBox.appendChild(rh);
+      rh.setAttribute('draggable', 'false');
       s.resizeHandle = rh;
     }
     if (!showHandle && s.resizeHandle) {

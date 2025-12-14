@@ -20,18 +20,34 @@
     if (!s.overlay) return;
     let dragging = false, resizing = false;
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, startW = 0, startH = 0;
-    s.overlay.addEventListener('mousedown', (e) => {
-      if (e.target === s.overlayHandle || e.target === s.deleteBtn) return;
-      dragging = true; s.overlay.style.cursor = 'grabbing';
-      startX = e.clientX; startY = e.clientY;
+    let pointerActive = false;
+    const getPointer = (e) => (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+    const overlayContains = (target) => s.overlay && (target === s.overlay || s.overlay.contains(target));
+    const handleContains = (target) => s.overlayHandle && (target === s.overlayHandle || s.overlayHandle.contains(target));
+    const deleteContains = (target) => s.deleteBtn && (target === s.deleteBtn || s.deleteBtn.contains(target));
+    const startDragInteraction = (e) => {
+      dragging = true;
+      resizing = false;
+      s.overlay.style.cursor = 'grabbing';
+      const pt = getPointer(e);
+      startX = pt.clientX; startY = pt.clientY;
       startLeft = parseFloat(s.overlay.style.left) || 0;
       startTop = parseFloat(s.overlay.style.top) || 0;
       e.preventDefault();
-    });
+    };
+    const startResizeInteraction = (e) => {
+      resizing = true;
+      dragging = false;
+      const pt = getPointer(e);
+      startX = pt.clientX; startY = pt.clientY;
+      startW = s.overlay.offsetWidth; startH = s.overlay.offsetHeight;
+      e.stopPropagation();
+      e.preventDefault();
+    };
     const onMove = (e) => {
       if (!dragging && !resizing) return;
       if (!s.printBox) return;
-      const pt = e.touches ? e.touches[0] : e;
+      const pt = getPointer(e);
       const boxLeft = parseFloat(s.printBox.style.left) || 0;
       const boxTop = parseFloat(s.printBox.style.top) || 0;
       const boxW = s.printBox.offsetWidth;
@@ -61,19 +77,83 @@
       Frenzy.actions.saveTransform();
       e.preventDefault();
     };
-    const onUp = () => { dragging = false; resizing = false; s.overlay.style.cursor = 'grab'; };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('mouseup', onUp);
-    document.addEventListener('touchend', onUp);
-    if (s.overlayHandle) {
-      s.overlayHandle.addEventListener('mousedown', (e) => {
-        resizing = true;
-        const pt = e.touches ? e.touches[0] : e;
-        startX = pt.clientX; startY = pt.clientY;
-        startW = s.overlay.offsetWidth; startH = s.overlay.offsetHeight;
-        e.stopPropagation(); e.preventDefault();
-      });
+    let overlayPointerId = null;
+    let handlePointerId = null;
+    const releaseOverlayCapture = () => {
+      if (overlayPointerId !== null && s.overlay.releasePointerCapture) {
+        s.overlay.releasePointerCapture(overlayPointerId);
+      }
+      overlayPointerId = null;
+    };
+    const releaseHandleCapture = () => {
+      if (handlePointerId !== null && s.overlayHandle && s.overlayHandle.releasePointerCapture) {
+        s.overlayHandle.releasePointerCapture(handlePointerId);
+      }
+      handlePointerId = null;
+    };
+    const onUp = () => {
+      dragging = false;
+      resizing = false;
+      s.overlay.style.cursor = 'grab';
+      pointerActive = false;
+      releaseOverlayCapture();
+      releaseHandleCapture();
+    };
+    const pointerSupported = !!window.PointerEvent;
+    const moveWrapper = (handler, shouldSkip) => (e) => {
+      if (shouldSkip && shouldSkip(e)) return;
+      handler(e);
+    };
+    const pointerDownHandler = (e) => {
+      if (deleteContains(e.target)) return;
+      if (handleContains(e.target)) {
+        if (e.pointerType) {
+          pointerActive = true;
+          handlePointerId = e.pointerId;
+          if (s.overlayHandle.setPointerCapture) s.overlayHandle.setPointerCapture(handlePointerId);
+        }
+        startResizeInteraction(e);
+      } else if (overlayContains(e.target)) {
+        if (e.pointerType) {
+          pointerActive = true;
+          overlayPointerId = e.pointerId;
+          if (s.overlay.setPointerCapture) s.overlay.setPointerCapture(overlayPointerId);
+        }
+        startDragInteraction(e);
+      }
+    };
+    const touchDownHandler = (e) => {
+      if (pointerActive) return;
+      if (deleteContains(e.target)) return;
+      if (handleContains(e.target)) return startResizeInteraction(e);
+      if (overlayContains(e.target)) startDragInteraction(e);
+    };
+    const mouseDownHandler = (e) => {
+      if (pointerActive) return;
+      if (deleteContains(e.target)) return;
+      if (handleContains(e.target)) return startResizeInteraction(e);
+      if (overlayContains(e.target)) startDragInteraction(e);
+    };
+    if (pointerSupported) {
+      document.addEventListener('pointerdown', pointerDownHandler, { passive: false, capture: true });
+      document.addEventListener('pointermove', moveWrapper(onMove, null), { passive: false });
+      document.addEventListener('pointerup', () => { onUp(); }, { passive: false });
+      document.addEventListener('pointercancel', () => { onUp(); }, { passive: false });
+      document.addEventListener('touchstart', touchDownHandler, { passive: false, capture: true });
+      document.addEventListener('mousedown', mouseDownHandler, { capture: true });
+      document.addEventListener('touchmove', moveWrapper(onMove, () => pointerActive), { passive: false });
+      document.addEventListener('touchend', () => { if (pointerActive) return; onUp(); }, { passive: false });
+      document.addEventListener('touchcancel', () => { if (pointerActive) return; onUp(); }, { passive: false });
+      document.addEventListener('mousemove', moveWrapper(onMove, () => pointerActive));
+      document.addEventListener('mouseup', () => { if (pointerActive) return; onUp(); });
+    } else {
+      document.addEventListener('mousedown', mouseDownHandler);
+      document.addEventListener('touchstart', touchDownHandler, { passive: false });
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchend', onUp);
+      document.addEventListener('touchcancel', onUp);
     }
     s.deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();

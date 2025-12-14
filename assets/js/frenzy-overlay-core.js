@@ -41,9 +41,28 @@
     const s = Frenzy.state;
     const overlay = document.createElement('div');
     overlay.className = 'frenzy-art';
-    Object.assign(overlay.style, { position: 'absolute', outline: '2px dashed #fff', boxSizing: 'border-box', cursor: 'grab', userSelect: 'none', pointerEvents: 'auto', maxWidth: `${(s.region.w / Frenzy.const.BASE_W) * (s.container.clientWidth || 1)}px`, overflow: 'visible', touchAction: 'none', backgroundImage: `url(${imgUrl})`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' });
+    Object.assign(overlay.style, {
+      position: 'absolute',
+      outline: '2px dashed #fff',
+      boxSizing: 'border-box',
+      cursor: 'grab',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      WebkitTouchCallout: 'none',
+      WebkitUserDrag: 'none',
+      pointerEvents: 'auto',
+      maxWidth: `${(s.region.w / Frenzy.const.BASE_W) * (s.container.clientWidth || 1)}px`,
+      overflow: 'visible',
+      touchAction: 'none',
+      backgroundImage: `url(${imgUrl})`,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: 'contain',
+      backgroundPosition: 'center',
+    });
     s.container.appendChild(overlay);
     s.overlay = overlay;
+    overlay.setAttribute('draggable', 'false');
 
     const del = document.createElement('div');
     del.className = 'frenzy-delete-btn';
@@ -55,9 +74,28 @@
     if (!s.overlayHandle) {
       const oh = document.createElement('div');
       oh.className = 'frenzy-art-resize';
-      Object.assign(oh.style, { position: 'absolute', width: '16px', height: '16px', right: '-12px', bottom: '-12px', border: '2px solid #fff', background: 'rgba(34,34,34,0.8)', cursor: 'nwse-resize', pointerEvents: 'auto', boxSizing: 'border-box', borderRadius: '2px', touchAction: 'none' });
+      Object.assign(oh.style, {
+        position: 'absolute',
+        width: '16px',
+        height: '16px',
+        right: '-12px',
+        bottom: '-12px',
+        border: '2px solid #fff',
+        background: 'rgba(34,34,34,0.8)',
+        cursor: 'nwse-resize',
+        pointerEvents: 'auto',
+        boxSizing: 'border-box',
+        borderRadius: '2px',
+        touchAction: 'none',
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserDrag: 'none',
+      });
       overlay.appendChild(oh);
       s.overlayHandle = oh;
+      oh.setAttribute('draggable', 'false');
     }
 
     const dims = Frenzy.getImageRects();
