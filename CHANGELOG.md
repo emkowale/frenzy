@@ -1,3 +1,51 @@
+v1.9.15 — 2025-12-13
+
+Changed files:
+- README.md
+- admin/admin.css
+- assets/css/frontend.css
+- assets/img/mockup-base.png
+- assets/js/frenzy-api.js
+- assets/js/frenzy-canvas.js
+- assets/js/frenzy-core.js
+- assets/js/frenzy-display.js
+- assets/js/frenzy-grid-drag.js
+- assets/js/frenzy-grid.js
+- assets/js/frenzy-init.js
+- assets/js/frenzy-overlay-core.js
+- assets/js/frenzy-overlay-interactions.js
+- assets/js/frenzy-printbox.js
+- assets/js/frenzy-submit.js
+- assets/js/frenzy-upload.js
+- frenzy.php
+- includes/ajax-mockup.php
+- includes/cart-meta-handler.php
+- includes/cart-thumbnail.php
+- includes/cart/add-item-data.php
+- includes/cart/ensure-mockup.php
+- includes/cart/order-meta.php
+- includes/cart/session-restore.php
+- includes/cart/validation.php
+- includes/email-hooks.php
+- includes/enqueue-scripts.php
+- includes/frontend-ui.php
+- includes/github-updater.php
+- includes/mockup/builder-core.php
+- includes/mockup/builder-scale.php
+- includes/mockup/builder-write.php
+- includes/mockup/handlers-generate.php
+- includes/mockup/handlers-save-canvas.php
+- includes/mockup/helpers-path.php
+- includes/mockup/hooks.php
+- includes/product-meta-box.php
+- includes/quantize/loader.php
+- includes/quantize/quantize-gd.php
+- includes/quantize/quantize-palette.php
+- includes/save-order-meta.php
+- includes/vectorize-image.py
+- includes/vectorize-runner.php
+- release.sh
+
 v1.9.14 — 2025-12-13
 
 Changed files:
