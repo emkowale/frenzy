@@ -40,7 +40,11 @@ else die "Cannot find ${MAIN_FILE} (root or ${PLUGIN_SLUG}/)"; fi
 # --- Make sure we’re on main and fetch (but local remains king) ---------------
 step "Prepare git"
 git switch -C main >/dev/null
-git remote set-url origin "$REMOTE_URL" >/dev/null 2>&1 || true
+if git remote get-url origin >/dev/null 2>&1; then
+  git remote set-url origin "$REMOTE_URL" >/dev/null 2>&1 || true
+else
+  git remote add origin "$REMOTE_URL" >/dev/null 2>&1 || true
+fi
 git fetch origin main --tags >/dev/null 2>&1 || true
 ok "Git ready"
 

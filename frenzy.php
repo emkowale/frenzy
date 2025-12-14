@@ -1,6 +1,6 @@
 <?php
 /*
- * Version: 1.9.15
+ * Version: 1.9.16
  * Plugin Name: Frenzy
  * Description: WooCommerce helper for Frenzy mockups and cart metadata.
  * Author: Eric Kowalewski
@@ -9,7 +9,7 @@
  */
 
 if (!defined('ABSPATH')) exit;
-define('FRENZY_VERSION','1.9.15');
+define('FRENZY_VERSION','1.9.16');
 define('FRENZY_MAIN_FILE', __FILE__);
 define('FRENZY_REPO', 'emkowale/frenzy');
 // Core includes (defensive to avoid fatal if a file is missing on the server)
