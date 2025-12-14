@@ -1,0 +1,25 @@
+/* Basic styles for overlay controls */
+.frenzy-print-box { border: 2px dashed rgba(255,255,255,0.9); position: absolute; box-sizing: border-box; }
+.frenzy-resize-handle { width: 18px; height: 18px; border: 2px solid #fff; background: rgba(34,34,34,0.8); position: absolute; right: -14px; bottom: -14px; cursor: nwse-resize; }
+.frenzy-art,
+.frenzy-art-resize,
+.frenzy-resize-handle {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+.frenzy-order-meta-action {
+  display: block;
+  margin: 0.4rem 0;
+  width: auto;
+}
+.frenzy-overlay-container { position: absolute; inset: 0; pointer-events: auto; }
+.frenzy-cart-block { margin: 0 0 12px 0; width: 100%; clear: both; }
+.frenzy-cart-block .frenzy-upload-button { width: 100%; display: block; float: none !important; text-align: center; }
+.woocommerce-product-gallery__trigger,
+.zoomImg { display: none !important; }
+.woocommerce-product-gallery__image a,
+.woocommerce-product-gallery__wrapper a { pointer-events: none !important; cursor: default !important; }
